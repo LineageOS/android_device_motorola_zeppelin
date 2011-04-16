@@ -59,7 +59,7 @@ extern "C" {
 
 #include "msm_camera.h" // Cliq XT kernel
 
-#define REVISION "0.4"
+#define REVISION "0.5"
 
 // init for CliqXT 
 #define THUMBNAIL_WIDTH_STR   "192"
@@ -90,9 +90,6 @@ unsigned char (*LINK_jpeg_encoder_encode)(const char* file_name, const cam_ctrl_
                                   const unsigned char* thumbnailbuf, int thumbnailfd,
                                   const unsigned char* snapshotbuf, int snapshotfd,
                                   common_crop_t *cropInfo);
-int  (*LINK_camframe_terminate)();
-void (*LINK_cam_set_frame_callback)();
-//bool (*LINK_cam_release_frame)();
 int8_t (*LINK_jpeg_encoder_setMainImageQuality)(uint32_t quality);
 int8_t (*LINK_jpeg_encoder_setThumbnailQuality)(uint32_t quality);
 int8_t (*LINK_jpeg_encoder_setRotation)(uint32_t rotation);
@@ -109,9 +106,6 @@ void  (**LINK_mmcamera_jpeg_callback)(jpeg_event_t status);
 #define LINK_jpeg_encoder_init jpeg_encoder_init
 #define LINK_jpeg_encoder_join jpeg_encoder_join
 #define LINK_jpeg_encoder_encode jpeg_encoder_encode
-#define LINK_camframe_terminate camframe_terminate
-#define LINK_cam_set_frame_callback cam_set_frame_callback
-//#define LINK_cam_release_frame cam_release_frame
 #define LINK_jpeg_encoder_setMainImageQuality jpeg_encoder_setMainImageQuality
 #define LINK_jpeg_encoder_setThumbnailQuality jpeg_encoder_setThumbnailQuality
 #define LINK_jpeg_encoder_setRotation jpeg_encoder_setRotation
@@ -420,14 +414,6 @@ void QualcommCameraHardware::startCamera()
         return;
     }
 
-#if 0 // useless now
-    *(void **)&LINK_cam_frame =
-        ::dlsym(libmmcamera, "cam_frame");
-#endif
-
-    *(void **)&LINK_camframe_terminate =
-        ::dlsym(libmmcamera, "camframe_terminate");
-
     *(void **)&LINK_jpeg_encoder_init =
         ::dlsym(libmmcamera, "jpeg_encoder_init");
 
@@ -441,14 +427,6 @@ void QualcommCameraHardware::startCamera()
         ::dlsym(libmmcamera, "camframe_callback");
 
     *LINK_mmcamera_camframe_callback = receive_camframe_callback;
-
-    // firesnatch !! this doesn't exist in motorola code
-    //*(void **)&LINK_cam_set_frame_callback =
-    //    ::dlsym(libmmcamera, "cam_set_frame_callback");
-    
-    // firesnatch !! this doesn't exist in motorola code
-    //*(void **)&LINK_cam_release_frame =
-    //    ::dlsym(libmmcamera, "cam_release_frame");
 
     *(void **)&LINK_mmcamera_jpegfragment_callback =
         ::dlsym(libmmcamera, "jpegfragment_callback");
@@ -1000,55 +978,6 @@ static void *cam_frame_click(void *data)
     return NULL;
 }
 
-#if 0
-void QualcommCameraHardware::runFrameThread(void *data)
-{
-    LOGV("runFrameThread E");
-
-#if DLOPEN_LIBMMCAMERA
-    // We need to maintain a reference to libmmcamera.so for the duration of the
-    // frame thread, because we do not know when it will exit relative to the
-    // lifetime of this object.  We do not want to dlclose() libmmcamera while
-    // LINK_cam_frame is still running.
-    void *libhandle = ::dlopen("libmmcamera.so", RTLD_NOW);
-    LOGV("FRAME: loading libmmcamera at %p", libhandle);
-    if (!libhandle) {
-        LOGE("FATAL ERROR: could not dlopen libmmcamera.so: %s", dlerror());
-    }
-    if (libhandle)
-#endif
-    {
-        cam_frame_click((msm_frame_t *)data);
-    }
-
-#if DLOPEN_LIBMMCAMERA
-    if (libhandle) {
-        ::dlclose(libhandle);
-        LOGV("FRAME: dlclose(libmmcamera)");
-    }
-#endif
-
-    mFrameThreadWaitLock.lock();
-    mFrameThreadRunning = false;
-    mFrameThreadWait.signal();
-    mFrameThreadWaitLock.unlock();
-
-    LOGV("runFrameThread X");
-}
-
-void *frame_thread(void *user)
-{
-    LOGV("frame_thread E");
-    sp<QualcommCameraHardware> obj = QualcommCameraHardware::getInstance();
-    if (obj != 0) {
-        obj->runFrameThread(user);
-    }
-    else LOGW("not starting frame thread: the object went away!");
-    LOGV("frame_thread X");
-    return NULL;
-}
-#endif
-
 void QualcommCameraHardware::runJpegEncodeThread(void *data)
 {
     unsigned char *buffer ;
@@ -1186,11 +1115,6 @@ bool QualcommCameraHardware::initPreview()
 
             if (cnt == kPreviewBufferCount - 1) {
                 LOGV("set preview callback");
-                // firesnatch, this call is not supported
-                //LINK_cam_set_frame_callback();
-
-                // TODO: memset(*s, 0, 0x14)
-
                 mFrameThreadRunning = !pthread_create(&mFrameThread,
                                                       NULL,
                                                       cam_frame_click, //frame_thread,
@@ -1449,10 +1373,6 @@ void QualcommCameraHardware::release()
     }
 #endif
 
-    // why ~QualcommCameraHardware() not called --> fixed!
-    // firesnatch - removed locking
-    //Mutex::Autolock lock(&singleton_lock);
-
     Mutex::Autolock lock(&singleton_lock);
     singleton.clear();
     singleton_releasing = false;
@@ -1463,13 +1383,7 @@ void QualcommCameraHardware::release()
 
 QualcommCameraHardware::~QualcommCameraHardware()
 {
-    LOGD("~QualcommCameraHardware E");
-    // firesnatch - relocated to the end of release() function
-    //Mutex::Autolock lock(&singleton_lock);
-    //singleton.clear();
-    //singleton_releasing = false;
-    //singleton_wait.signal();
-    LOGD("~QualcommCameraHardware X");
+    LOGD("~QualcommCameraHardware");
 }
 
 sp<IMemoryHeap> QualcommCameraHardware::getRawHeap() const
@@ -1586,6 +1500,9 @@ void QualcommCameraHardware::runAutoFocus()
     }
 #endif
 
+    // firesnatch 04/16/2011 - slight delay needed here to make barcode scanning work
+	usleep(100000);
+
     /* This will block until either AF completes or is cancelled. */
     native_set_afmode(camerafd, AF_MODE_MACRO);
     if (native_get_af_result(camerafd) == 0) {
@@ -1610,9 +1527,6 @@ void QualcommCameraHardware::runAutoFocus()
 
 status_t QualcommCameraHardware::cancelAutoFocus()
 {
-    // firesnatch - removed call
-    //native_cancel_afmode(mCameraControlFd, mAutoFocusFd);
-    /* Needed for eclair camera PAI */
     return NO_ERROR;
 }
 
@@ -1780,7 +1694,6 @@ status_t QualcommCameraHardware::cancelPicture()
     return NO_ERROR;
 }
 
-//#if 0
 void QualcommCameraHardware::initCameraParameters()
 {
     LOGV("initCameraParameters: E");
@@ -1809,7 +1722,6 @@ void QualcommCameraHardware::initCameraParameters()
 
     LOGV("initCameraParameters: X");
 }
-//#endif
 
 status_t QualcommCameraHardware::setParameters(
         const CameraParameters& params)
@@ -1899,15 +1811,6 @@ sp<CameraHardwareInterface> QualcommCameraHardware::createInstance()
 
     LOGV("createInstance: E");
 
-    // firesnatch - removed this locking code
-    ///LOGV("get into singleton lock");
-    //Mutex::Autolock lock(&singleton_lock);
-    // Wait until the previous release is done.
-    //while (singleton_releasing) {
-    //    LOGD("Wait for previous release.");
-    //    singleton_wait.wait(singleton_lock);
-    //}
-
     if (singleton != 0) {
         sp<CameraHardwareInterface> hardware = singleton.promote();
         if (hardware != 0) {
@@ -1975,9 +1878,6 @@ void QualcommCameraHardware::receivePreviewFrame(struct msm_frame_t *frame)
 
         if (mReleasedRecordingFrame != true) {
             LOGV("block for release frame request/command");
-            // firesnatch - removed, not supported
-            //if (!LINK_cam_release_frame())
-            //    LOGE("cam_release_frame failed");
             mRecordWait.wait(mRecordFrameLock);
         }
         mReleasedRecordingFrame = false;
@@ -2032,9 +1932,6 @@ void QualcommCameraHardware::releaseRecordingFrame(
     LOGV("releaseRecordingFrame E");
     Mutex::Autolock l(&mLock);
     Mutex::Autolock rLock(&mRecordFrameLock);
-    // firesnatch - removed, not supported
-    //if (!LINK_cam_release_frame())
-    //    LOGE("cam_release_frame failed");
     mReleasedRecordingFrame = true;
     mRecordWait.signal();
     LOGV("releaseRecordingFrame X");
@@ -2503,3 +2400,4 @@ status_t QualcommCameraHardware::sendCommand(int32_t command, int32_t arg1,
 }
 
 }; // namespace android
+
