@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAADn///Es\u003d",
+        "filename": "libcamera/QualcommCameraHardware.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 428,
+      "author": {
+        "id": 176
+      },
+      "writtenOn": "2011-04-17T22:06:38Z",
+      "side": 1,
+      "message": "You can remove all those libmmcamera functions since are not used in the code. also you can remove privative limmcamera and will free space. You only need libmm-qcamera-target.so",
+      "revId": "d58c6cfe21e47b06b1df28e66f273260be275770",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
