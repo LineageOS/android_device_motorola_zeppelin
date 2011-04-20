@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAADn//+7M\u003d",
+        "filename": "libcamera/QualcommCameraHardware.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 176
+      },
+      "writtenOn": "2011-04-20T10:40:15Z",
+      "side": 1,
+      "message": "Remove this white space at the end of the line",
+      "revId": "feafc2ea5c7d4cc84252e7ad2cbe7bbf7fb851f2",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
