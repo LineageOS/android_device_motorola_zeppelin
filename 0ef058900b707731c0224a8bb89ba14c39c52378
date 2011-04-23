@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAADn//+rM\u003d",
+        "filename": "libcamera/QualcommCameraHardware.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1502,
+      "author": {
+        "id": 27
+      },
+      "writtenOn": "2011-04-23T03:52:09Z",
+      "side": 1,
+      "message": "We generally frown upon authors putting their names in comments.  The commit authored to you on github",
+      "revId": "0ef058900b707731c0224a8bb89ba14c39c52378",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
