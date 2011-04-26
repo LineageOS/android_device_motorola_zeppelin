@@ -130,6 +130,7 @@ public:
 
     virtual status_t    setVoiceVolume(float volume);
     virtual status_t    setMasterVolume(float volume);
+    virtual status_t    setFmVolume(float volume);
 
     virtual status_t    setMode(int mode);
 
@@ -177,6 +178,9 @@ private:
     uint32_t    getInputSampleRate(uint32_t sampleRate);
     bool        checkOutputStandby();
     status_t    doRouting(AudioStreamInMSM72xx *input);
+#ifdef HAVE_FM_RADIO
+    status_t    setFmOnOff(int onoff);
+#endif
     status_t    checkInputSampleRate(uint32_t sampleRate);
 #if defined(MOT_FEATURE_PLATFORM_MSM7K)
     int get_audpp_filter(void);
@@ -286,6 +290,7 @@ private:
             msm_snd_endpoint *mSndEndpoints;
             int mNumSndEndpoints;
             int mCurSndDevice;
+            int mFmRadioEnabled;
             int mTtyMode;
             int mPrevMode;
 
