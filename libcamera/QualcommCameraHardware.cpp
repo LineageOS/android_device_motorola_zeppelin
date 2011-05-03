@@ -1501,6 +1501,10 @@ void QualcommCameraHardware::runAutoFocus()
 
     /* This will block until either AF completes or is cancelled. */
     native_set_afmode(camerafd, AF_MODE_MACRO);
+
+    // more delay here
+    usleep(100000);
+
     if (native_get_af_result(camerafd) == 0) {
         status = true;
     }
