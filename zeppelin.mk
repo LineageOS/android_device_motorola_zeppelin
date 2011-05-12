@@ -86,7 +86,8 @@ PRODUCT_PACKAGES += \
     libcamera \
     libaudio \
     rzscontrol \
-    dexpreopt
+    dexpreopt \
+    setrecovery
 
 DISABLE_DEXPREOPT := false
 
