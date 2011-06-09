@@ -1,0 +1,4 @@
+#!/system/bin/sh
+mkdir /cache/tmp/
+mount -t tmpfs /dev/null /cache/tmp/
+

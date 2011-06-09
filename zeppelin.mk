@@ -122,7 +122,8 @@ $(call inherit-product-if-exists, vendor/motorola/zeppelin/zeppelin-vendor.mk)
 
 PRODUCT_COPY_FILES += \
     device/motorola/zeppelin/media_profiles.xml:/system/etc/media_profiles.xml \
-    device/motorola/zeppelin/sysctl.conf:system/etc/sysctl.conf
+    device/motorola/zeppelin/sysctl.conf:system/etc/sysctl.conf \
+    device/motorola/zeppelin/07cachetmp:system/etc/init.d/07cachetmp
 
 $(call inherit-product, build/target/product/full_base.mk)
 
