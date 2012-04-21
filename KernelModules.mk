@@ -9,7 +9,6 @@ PRODUCT_COPY_FILES += \
 	device/motorola/zeppelin/modules/drivers/misc/unlock.ko:system/lib/modules/2.6.29.6/drivers/misc/unlock.ko \
 	device/motorola/zeppelin/modules/net/sunrpc/sunrpc.ko:system/lib/modules/2.6.29.6/net/sunrpc/sunrpc.ko \
 	device/motorola/zeppelin/modules/net/sunrpc/auth_gss/rpcsec_gss_krb5.ko:system/lib/modules/2.6.29.6/net/sunrpc/auth_gss/rpcsec_gss_krb5.ko \
-	device/motorola/zeppelin/modules/net/sunrpc/auth_gss/rpcsec_gss_spkm3.ko:system/lib/modules/2.6.29.6/net/sunrpc/auth_gss/rpcsec_gss_spkm3.ko \
 	device/motorola/zeppelin/modules/net/sunrpc/auth_gss/auth_rpcgss.ko:system/lib/modules/2.6.29.6/net/sunrpc/auth_gss/auth_rpcgss.ko \
 	device/motorola/zeppelin/modules/dhd.ko:system/lib/modules/dhd.ko
 
